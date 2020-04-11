@@ -1,11 +1,14 @@
 """Module for defining a card"""
 
 
-# List of face cards
+# List cards
 ace = ["A"]
 non_face_cards = [str(i) for i in range(2, 11)]
 face_cards = ["J", "Q", "K"]
-all_cards = ace + non_face_cards + face_cards
+cards_list = ace + non_face_cards + face_cards
+
+# List suits
+suits_list = ["H", "C", "D", "S"]
 
 
 class Card:
@@ -71,7 +74,7 @@ class Card:
     def display_card(self):
         """Method for displaying a card"""
 
-        print("|" + self.unicode + "|")
+        print(self.unicode)
 
 
 if __name__ == "__main__":
