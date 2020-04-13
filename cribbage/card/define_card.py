@@ -19,6 +19,7 @@ class Card:
         self.rank = rank,
         self.suit = suit,
         self.value = self.set_value(rank=rank)
+        self.order = self.set_order(rank=rank)
         self.unicode = self.set_unicode(rank=rank, suit=suit)
 
     @staticmethod
@@ -70,6 +71,45 @@ class Card:
         unicode = rank + suit_unicode
 
         return unicode
+
+    @staticmethod
+    def set_order(rank):
+        """Method for setting the order of a card"""
+
+        # If a non-face card, the order is equal to the rank
+        if rank in non_face_cards:
+
+            order = int(rank)
+
+        # Ace has order 1
+        elif rank in ace:
+
+            order = 1
+
+        # Face cards have order J, Q, K
+        elif rank in face_cards:
+
+            order_dict = {
+
+                "J": 11,
+                "Q": 12,
+                "K": 13
+
+            }
+
+            try:
+
+                order = order_dict[rank]
+
+            except KeyError:
+
+                raise ValueError("Invalid rank")
+
+        else:
+
+            raise ValueError("Invalid rank")
+
+        return order
 
     def display_card(self):
         """Method for displaying a card"""
