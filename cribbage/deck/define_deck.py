@@ -100,7 +100,7 @@ class Deck:
 
         print_output += "\t".join(unicode_list)
 
-        card_numbers = "\t".join([str(i) for i in list(range(1, 7))])
+        card_numbers = "\t".join([str(i) for i in list(range(1, len(unicode_list) + 1))])
 
         print_output += f"\n{card_numbers}"
 
