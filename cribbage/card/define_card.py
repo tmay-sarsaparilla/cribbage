@@ -16,8 +16,8 @@ class Card:
 
     def __init__(self, rank="2", suit="S"):
 
-        self.rank = rank,
-        self.suit = suit,
+        self.rank = rank
+        self.suit = suit
         self.value = self.set_value(rank=rank)
         self.order = self.set_order(rank=rank)
         self.unicode = self.set_unicode(rank=rank, suit=suit)

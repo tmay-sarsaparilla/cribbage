@@ -1,7 +1,8 @@
 """Module for defining a deck of cards"""
 
 from random import shuffle
-from itertools import combinations
+from operator import itemgetter
+from itertools import combinations, groupby
 from cribbage.card.define_card import Card, cards_list, suits_list
 
 
@@ -78,13 +79,48 @@ class Deck:
 
         return card
 
-    def display_cards(self):
+    def sort_cards(self):
+        """Method for sorting a deck by the order and suit of its cards"""
 
-        sorted_cards = sorted(self.cards, key=lambda x: x.order)
-
-        print([i.unicode for i in sorted_cards])
+        # Sort the cards
+        self.cards.sort(key=lambda x: x.order)
 
         return
+
+    def display_cards(self):
+        """Method for displaying a deck of cards"""
+
+        # Sort cards in the deck
+        self.sort_cards()
+
+        # Print the cards
+        unicode_list = [i.unicode for i in self.cards]
+
+        print_output = ""
+
+        print_output += "\t".join(unicode_list)
+
+        card_numbers = "\t".join([str(i) for i in list(range(1, 7))])
+
+        print_output += f"\n{card_numbers}"
+
+        print(print_output)
+
+        return
+
+    def deal(self, dealer_hand, opponent_hand):
+        """Method for dealing cards to players' hands"""
+
+        # Deal six cards to each player
+        for i in range(0, 6):
+
+            # Deal to opponent first
+            opponent_hand.add_card(self.draw_card())
+
+            # Then to dealer
+            dealer_hand.add_card(self.draw_card())
+
+        return dealer_hand, opponent_hand
 
 
 class Hand(Deck):
@@ -182,9 +218,113 @@ class Hand(Deck):
     def count_runs(self):
         """Method for counting runs of cards in a hand"""
 
-        runs = 0
+        runs_of_three = 0
+        runs_of_four = 0
+        runs_of_five = 0
 
-        return
+        # Get the card orders
+        card_orders = [i.order for i in self.cards]
+
+        # Get the unique set of card orders
+        card_order_set = list(set(card_orders))
+
+        # Order the set
+        card_order_set.sort()
+
+        runs_list = []
+
+        # Group the set into runs of consecutive numbers
+        # This is done by grouping by the index of the number minus its value
+        # E.g. 1, 2 becomes 1-1=0, 2-2=0 and therfore groups together
+        for k, g in groupby(enumerate(card_order_set), lambda x: x[0] - x[1]):
+
+            group = (map(itemgetter(1), g))
+            group_list = list(map(int, group))
+            runs_list.append(group_list)
+
+        # Calculate the length of each run found
+        run_length_list = [len(i) for i in runs_list]
+
+        # If there are no runs greater than length 2, return
+        if len(runs_list) == 0 or max(run_length_list) == 2:
+
+            return runs_of_three, runs_of_four, runs_of_five
+
+        # Only retain runs greater than 2 in length
+        runs_list_redux = [i for i in runs_list if len(i) > 2]
+
+        # At this point there should only be one run left
+        try:
+
+            run = runs_list_redux[0]
+
+        # If not, something has gone wrong
+        except IndexError:
+
+            raise IndexError("More than one run of cards left after reduction")
+
+        # There's at least one run
+        runs_count = 1
+
+        # Look for duplicate orders in the full list
+        # i.e. 4, 4, 5, 6 means there are two runs of length three
+        for i in run:
+
+            # If there are duplicates, apply a multiplier to the count
+            order_count = card_orders.count(i)
+            runs_count *= order_count
+
+        # Determine length of the run
+        run_length = len(run)
+
+        # Increase the relevant counts
+        if run_length == 3:
+
+            runs_of_three += runs_count
+
+        elif run_length == 4:
+
+            runs_of_four += runs_count
+
+        elif run_length == 5:
+
+            runs_of_five += runs_count
+
+        else:
+
+            raise ValueError("Invalid run length")
+
+        return runs_of_three, runs_of_four, runs_of_five
+
+    def count_flushes(self, shared_card):
+        """Method for counting flushes in a hand"""
+
+        four_card_flush = 0
+        five_card_flush = 0
+
+        # Get the suits of all cards excluding the shared card
+        hand_suits = [i.suit for i in self.cards if i != shared_card]
+
+        # Get the unique set of suits
+        suits_set = list(set(hand_suits))
+
+        # If there is only one suit in the hand
+        if len(suits_set) == 1:
+
+            # If the shared card has the same suit, it's a five card flush
+            if shared_card.suit in suits_set:
+
+                five_card_flush += 1
+
+            # Otherwise it's a four card flush
+            else:
+
+                # Crib hand can only score on a five card flush
+                if not self.is_crib:
+
+                    four_card_flush += 1
+
+        return four_card_flush, five_card_flush
 
     def count_nobs(self, shared_card):
         """Method for counting nobs in a hand"""
@@ -234,6 +374,16 @@ class Hand(Deck):
 
         score += pairs * 2
 
+        # Count runs of cards
+        runs_of_three, runs_of_four, runs_of_five = self.count_runs()
+
+        score += runs_of_three * 3 + runs_of_four * 4 + runs_of_five * 5
+
+        # Count flushes
+        four_card_flush, five_card_flush = self.count_flushes(shared_card=shared_card)
+
+        score += four_card_flush * 4 + five_card_flush * 5
+
         # Count nobs
         nobs = self.count_nobs(shared_card=shared_card)
 
@@ -244,23 +394,18 @@ class Hand(Deck):
 
 if __name__ == "__main__":
 
-    deck_test = Deck()
-    deck_test.populate()
+    cards_test = [Card("A", "C"), Card("6", "C"), Card("7", "C"), Card("10", "C")]
 
-    deck_test.shuffle()
+    shared_card_test = Card("K", "D")
 
-    hand_test = Hand()
+    hand_test = Hand(is_crib=True)
 
-    for i_test in range(0, 4):
+    for i in cards_test:
 
-        card_test = deck_test.draw_card()
-        hand_test.add_card(card_test)
-
-    shared_card_test = deck_test.draw_card()
+        hand_test.add_card(i)
 
     hand_test.display_cards()
     print(shared_card_test.unicode)
-
     score_test = hand_test.score_hand(shared_card_test)
 
     print(score_test)
