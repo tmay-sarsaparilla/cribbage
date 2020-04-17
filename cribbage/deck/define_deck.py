@@ -235,7 +235,7 @@ class Hand(Deck):
 
         # Group the set into runs of consecutive numbers
         # This is done by grouping by the index of the number minus its value
-        # E.g. 1, 2 becomes 1-1=0, 2-2=0 and therfore groups together
+        # E.g. 1, 2 becomes 1-1=0, 2-2=0 and therefore group together
         for k, g in groupby(enumerate(card_order_set), lambda x: x[0] - x[1]):
 
             group = (map(itemgetter(1), g))
@@ -246,7 +246,7 @@ class Hand(Deck):
         run_length_list = [len(i) for i in runs_list]
 
         # If there are no runs greater than length 2, return
-        if len(runs_list) == 0 or max(run_length_list) == 2:
+        if len(runs_list) == 0 or max(run_length_list) <= 2:
 
             return runs_of_three, runs_of_four, runs_of_five
 
@@ -394,11 +394,11 @@ class Hand(Deck):
 
 if __name__ == "__main__":
 
-    cards_test = [Card("A", "C"), Card("6", "C"), Card("7", "C"), Card("10", "C")]
+    cards_test = [Card("A", "H"), Card("A", "S"), Card("7", "H"), Card("7", "D")]
 
-    shared_card_test = Card("K", "D")
+    shared_card_test = Card("4", "C")
 
-    hand_test = Hand(is_crib=True)
+    hand_test = Hand(is_crib=False)
 
     for i in cards_test:
 
