@@ -97,24 +97,25 @@ class Computer(Player):
 
         super().__init__("Computer")
         self.difficulty = difficulty
-        self.full_deck = None
+        self.master_deck = None
 
-    def set_full_deck(self, full_deck):
+    def set_master_deck(self, master_deck):
         """Method for setting the full deck for the computer player"""
 
-        self.full_deck = full_deck
+        self.master_deck = master_deck
 
         return
 
     def discard(self):
         """Method to choose cards to discard"""
 
-        # Remove the cards currently in the computer's hand
-        for i in self.hand.cards:
+        # Get all cards excluding those in the computer's hand
+        master_deck = [i for i in self.master_deck.cards if i not in self.hand.cards]
 
-            self.full_deck.remove_card(i)
+        print(len(master_deck))
 
         # Get all combinations of cards of length 4
+        self.hand.unique_card_combinations()
         combinations = [i for i in self.hand.combinations if len(i) == 4]
 
         possible_scores_list = []
@@ -127,12 +128,12 @@ class Computer(Player):
 
                 possible_hand.add_card(card)
 
-            for shared_card in self.full_deck.cards:
+            for shared_card in master_deck:
 
                 possible_score = possible_hand.score_hand(shared_card=shared_card)
 
                 possible_scores_list.append(possible_score)
 
-        print(possible_scores_list[0])
+        print(possible_scores_list)
 
         return

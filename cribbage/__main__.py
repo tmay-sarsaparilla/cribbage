@@ -2,29 +2,15 @@
 
 from cribbage.__init__ import Deck, Player, Computer
 
-# Build the deck
+# Build the master deck reference
 deck = Deck()
 deck.populate()
-deck.shuffle()
 
-full_deck= deck
+all_cards = deck.cards
 
-# Create players
-player = Player("Tim")
-computer = Computer(difficulty="easy")
+deck.draw_card()
 
-deck.deal(player.hand, computer.hand)
+print(type(deck.cards))
+print(type(all_cards))
 
-player_discards = player.discard()
-
-player.hand.display_cards()
-
-computer.set_full_deck(full_deck=full_deck)
-computer.discard()
-
-shared_card = deck.draw_card()
-print(f"Shared card: {shared_card.unicode}")
-
-score = player.hand.score_hand(shared_card=shared_card)
-
-print(score)
+#computer.discard()
