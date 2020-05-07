@@ -15,6 +15,8 @@ computer = Computer("hard")
 
 computer.add_cards_list(all_cards)
 
+player.give_crib()
+
 deck.deal(player.hand, computer.hand)
 
 player_discards = player.discard()

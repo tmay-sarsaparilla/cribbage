@@ -2,8 +2,10 @@
 
 from numpy import mean
 from random import choice
+from itertools import combinations
 from cribbage.deck.define_deck import Hand
 from cribbage.player.functions import prompt_player_for_input
+from cribbage.deck.functions import unique_combinations
 
 
 class Player:
@@ -13,6 +15,7 @@ class Player:
 
         self.name = player_name
         self.hand = Hand(is_crib=False)
+        self.has_crib = False
         self.score = 0
 
     def has_won(self):
@@ -31,6 +34,13 @@ class Player:
 
         # Add to the score - can't be more than 121
         self.score = min(121, self.score + score)
+
+        return
+
+    def give_crib(self):
+        """Method for giving the crib to a player"""
+
+        self.has_crib = True
 
         return
 
@@ -108,65 +118,14 @@ class Computer(Player):
 
         return
 
-    def choose_combination(self, combinations, average_scores):
-        """Method for choosing which cards to discard from a Computer's hand"""
-
-        # Set the range of the random choice based on the computer's difficulty level
-        # There will always be 15 combinations
-        if self.difficulty == "easy":
-
-            choice_range = 10
-
-        elif self.difficulty == "standard":
-
-            choice_range = 5
-
-        elif self.difficulty == "hard":
-
-            choice_range = 3
-
-        elif self.difficulty == "perfect":
-
-            choice_range = 1
-
-        else:
-
-            raise ValueError("Invalid difficulty choice")
-
-        # Zip the combinations and scores together
-        zipped_list = zip(combinations, average_scores)
-
-        # Sort the list by average score
-        sorted_list = sorted(zipped_list, key=lambda x: x[1], reverse=True)
-
-        # Reduce the range of the list
-        sorted_list = sorted_list[:choice_range]
-
-        # Make a random choice of combination
-        combination_choice = choice([i[0] for i in sorted_list])
-
-        return combination_choice
-
-    def discard(self):
-        """Method to choose cards to discard"""
-
-        # Get all cards excluding those in the computer's hand
-        full_deck = [i for i in self.all_cards if i not in self.hand.cards]
-
-        # Get all combinations of cards of length 4
-        self.hand.unique_card_combinations()
-
-        combinations = [i for i in self.hand.combinations if len(i) == 4]
-
-        # Check that there are 15 combinations
-        if len(combinations) != 15:
-
-            raise ValueError("Maths is broken: 6 choose 4 has 15 combinations")
+    @staticmethod
+    def calculate_combination_hand_scores(card_combinations, full_deck):
+        """Method for calculating the average score of each hand combination"""
 
         possible_average_scores = []
 
         # Loop through each combination
-        for i in combinations:
+        for i in card_combinations:
 
             possible_scores_list = []
 
@@ -196,8 +155,142 @@ class Computer(Player):
             # Add to the list
             possible_average_scores.append(average_score)
 
+        return possible_average_scores
+
+    def calculate_combination_crib_scores(self, card_combinations, full_deck):
+        """Method for calculating the average score of each crib combination"""
+
+        possible_average_scores = []
+
+        # Find all combinations of the remaining cards of length 3 (two crib cards plus a shared card)
+        # This list isn't deduped because the scores will change depending on which card is the shared card
+        other_card_possibilities = list(combinations(full_deck, 3))
+
+        # Loop through all hand combinations
+        for i in card_combinations:
+
+            possible_score_list = []
+
+            # Create a crib
+            possible_hand = Hand(is_crib=True)
+
+            # Get the two discard cards and add them to the crib
+            for card in [k for k in self.hand.cards if k not in i]:
+
+                possible_hand.add_card(card)
+
+            # Loop through the combination of other cards
+            for j in other_card_possibilities:
+
+                # Add the first two to the crib
+                for card in j[0:1]:
+
+                    possible_hand.add_card(card)
+
+                # Calculate the score with the third card as the shared card
+                possible_score = possible_hand.score_hand(shared_card=j[2])
+
+                # Add to the list of scores
+                possible_score_list.append(possible_score)
+
+                # Remove all the cards from the hand
+                for card in j:
+
+                    possible_hand.remove_card(card)
+
+            # Calculate the average score fro the combination
+            average_score = mean(possible_score_list)
+
+            # Append to the list
+            possible_average_scores.append(average_score)
+
+        return possible_average_scores
+
+    def choose_combination(self, card_combinations, average_scores):
+        """Method for choosing which cards to discard from a Computer's hand"""
+
+        # Set the range of the random choice based on the computer's difficulty level
+        # There will always be 15 combinations
+        if self.difficulty == "easy":
+
+            choice_range = 10
+
+        elif self.difficulty == "standard":
+
+            choice_range = 5
+
+        elif self.difficulty == "hard":
+
+            choice_range = 3
+
+        elif self.difficulty == "perfect":
+
+            choice_range = 1
+
+        else:
+
+            raise ValueError("Invalid difficulty choice")
+
+        # Zip the combinations and scores together
+        zipped_list = zip(card_combinations, average_scores)
+
+        # Sort the list by average score
+        sorted_list = sorted(zipped_list, key=lambda x: x[1], reverse=True)
+
+        # Reduce the range of the list
+        sorted_list = sorted_list[:choice_range]
+
+        # Make a random choice of combination
+        combination_choice = choice([i[0] for i in sorted_list])
+
+        return combination_choice
+
+    def discard(self):
+        """Method to choose cards to discard"""
+
+        # Get all cards excluding those in the computer's hand
+        full_deck = [i for i in self.all_cards if i not in self.hand.cards]
+
+        # Get all combinations of cards of length 4
+        card_combinations = unique_combinations(self.hand.cards, 4, 4)
+
+        # Check that there are 15 combinations
+        if len(card_combinations) != 15:
+
+            raise ValueError("Maths is broken: 6 choose 4 has 15 combinations")
+
+        # Calculate the average score for each hand combination
+        possible_average_hand_scores = self.calculate_combination_hand_scores(
+            card_combinations=card_combinations,
+            full_deck=full_deck
+        )
+
+        # Calculate the average crib score for each hand combination
+        possible_average_crib_scores = self.calculate_combination_crib_scores(
+            card_combinations=card_combinations,
+            full_deck=full_deck
+        )
+
+        # If the computer has the crib, add crib points to hand points
+        if self.has_crib:
+
+            total_average_scores = [a + b for a, b in zip(possible_average_hand_scores, possible_average_crib_scores)]
+
+        # If player has the crib, subtract crib points from hand points
+        elif not self.has_crib:
+
+            total_average_scores = [a - b for a, b in zip(possible_average_hand_scores, possible_average_crib_scores)]
+
+        # Otherwise raise an error because something is broken
+        else:
+
+            raise ValueError("Attribute 'has_crib' not initialised")
+
         # Make a choice of combination to keep
-        combination_choice = self.choose_combination(combinations=combinations, average_scores=possible_average_scores)
+        combination_choice = self.choose_combination(
+            card_combinations=card_combinations,
+            average_scores=total_average_scores
+        )
 
         discarded_cards = []
 

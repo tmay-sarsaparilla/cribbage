@@ -1,9 +1,13 @@
 """Module for defining a deck of cards"""
 
-from random import shuffle
-from operator import itemgetter
-from itertools import combinations, groupby
-from cribbage.card.define_card import Card, cards_list, suits_list
+from cribbage.deck.__init__ import \
+    shuffle, \
+    itemgetter, \
+    groupby, \
+    Card, \
+    cards_list, \
+    suits_list, \
+    unique_combinations
 
 
 class Deck:
@@ -136,22 +140,11 @@ class Hand(Deck):
         """Method for finding all unique combinations of cards in a hand"""
 
         # Find all combinations of cards of lengths 1 to 5
-        card_combinations = [list(combinations(self.cards, i)) for i in range(1, 6)]
-
-        # Flatten into a single list
-        card_combinations_flat = [item for sublist in card_combinations for item in sublist]
-
-        # Deduplicate i.e (K♥, 7♦) == (7♦, K♥)
-        card_combinations_deduped = []
-
-        # Loop through every element of the list
-        for i in card_combinations_flat:
-
-            # If the set of objects in the element is already in the deduped list, don't add
-            if set(i) not in [set(j) for j in card_combinations_deduped]:
-
-                # Otherwise, add the element
-                card_combinations_deduped.append(i)
+        card_combinations_deduped = unique_combinations(
+            card_list=self.cards,
+            minimum_length=1,
+            maximum_length=5
+        )
 
         # Set the objects combinations attribute
         self.combinations = card_combinations_deduped
