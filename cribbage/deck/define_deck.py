@@ -400,9 +400,9 @@ if __name__ == "__main__":
 
     hand_test = Hand(is_crib=False)
 
-    for i in cards_test:
+    for i_test in cards_test:
 
-        hand_test.add_card(i)
+        hand_test.add_card(i_test)
 
     hand_test.display_cards()
     print(shared_card_test.unicode)
