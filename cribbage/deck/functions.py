@@ -1,6 +1,6 @@
 """Module for retrieving unique combinations of cards"""
 
-from cribbage.deck.__init__ import combinations
+from itertools import combinations
 
 
 def unique_combinations(card_list, minimum_length, maximum_length):

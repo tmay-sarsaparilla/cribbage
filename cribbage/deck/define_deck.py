@@ -1,13 +1,10 @@
 """Module for defining a deck of cards"""
 
-from cribbage.deck.__init__ import \
-    shuffle, \
-    itemgetter, \
-    groupby, \
-    Card, \
-    cards_list, \
-    suits_list, \
-    unique_combinations
+from random import shuffle
+from operator import itemgetter
+from itertools import groupby
+from cribbage.card import Card, cards_list, suits_list
+from cribbage.deck.functions import unique_combinations
 
 
 class Deck:

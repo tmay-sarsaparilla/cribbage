@@ -1,7 +1,7 @@
 """Main module for the cribbage package"""
 
 from copy import copy
-from cribbage.__init__ import Deck, Player, Computer
+from cribbage import Deck, Player, Computer
 
 # Build the deck
 deck = Deck()

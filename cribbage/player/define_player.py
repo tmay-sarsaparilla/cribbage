@@ -1,11 +1,9 @@
 """Module for defining a player"""
 
-from cribbage.player.__init__ import \
-    mean, \
-    choice, \
-    Hand, \
-    prompt_player_for_input, \
-    unique_combinations
+from numpy import mean
+from random import choice
+from cribbage.deck import Hand, unique_combinations
+from cribbage.player.functions import prompt_player_for_input
 
 
 class Player:
