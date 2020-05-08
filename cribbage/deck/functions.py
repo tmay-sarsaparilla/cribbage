@@ -1,6 +1,6 @@
 """Module for retrieving unique combinations of cards"""
 
-from itertools import combinations
+from cribbage.deck.__init__ import combinations
 
 
 def unique_combinations(card_list, minimum_length, maximum_length):
@@ -18,7 +18,7 @@ def unique_combinations(card_list, minimum_length, maximum_length):
     # Loop through every element of the list
     for i in card_combinations_flat:
 
-        # If the set of objects in the element is already in the deduped list, don't add
+        # If the set of objects in the element is already in the de-duped list, don't add
         if set(i) not in [set(j) for j in card_combinations_deduped]:
             # Otherwise, add the element
             card_combinations_deduped.append(i)

@@ -2,7 +2,6 @@
 
 from numpy import mean
 from random import choice
-from itertools import combinations
 from cribbage.deck.define_deck import Hand
 from cribbage.player.functions import prompt_player_for_input
 from cribbage.deck.functions import unique_combinations
@@ -160,11 +159,12 @@ class Computer(Player):
     def calculate_combination_crib_scores(self, card_combinations, full_deck):
         """Method for calculating the average score of each crib combination"""
 
+        # TODO: Speed up this function
+
         possible_average_scores = []
 
-        # Find all combinations of the remaining cards of length 3 (two crib cards plus a shared card)
-        # This list isn't deduped because the scores will change depending on which card is the shared card
-        other_card_possibilities = list(combinations(full_deck, 3))
+        # Find unique combinations of the remaining cards of length 2
+        other_card_possibilities = unique_combinations(full_deck, 2, 2)
 
         # Loop through all hand combinations
         for i in card_combinations:
@@ -183,15 +183,20 @@ class Computer(Player):
             for j in other_card_possibilities:
 
                 # Add the first two to the crib
-                for card in j[0:1]:
+                for card in j:
 
                     possible_hand.add_card(card)
 
-                # Calculate the score with the third card as the shared card
-                possible_score = possible_hand.score_hand(shared_card=j[2])
+                for shared_card in [card for card in full_deck if card not in j]:
 
-                # Add to the list of scores
-                possible_score_list.append(possible_score)
+                    # Calculate the score with the third card as the shared card
+                    possible_score = possible_hand.score_hand(shared_card=shared_card)
+
+                    # Add to the list of scores
+                    possible_score_list.append(possible_score)
+
+                    # Remove the shared card from the hand
+                    possible_hand.remove_card(shared_card)
 
                 # Remove all the cards from the hand
                 for card in j:
