@@ -16,7 +16,7 @@ class Player:
         self.has_crib = False
         self.score = 0
 
-    def has_won(self):
+    def check_if_won(self):
         """Method to check if a player has won"""
 
         has_won = False
@@ -41,6 +41,11 @@ class Player:
         self.has_crib = True
 
         return
+
+    def take_crib(self):
+        """Method for taking the crib from a player"""
+
+        self.has_crib = False
 
     def discard(self):
         """Method for prompting a player to discard"""

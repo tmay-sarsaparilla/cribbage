@@ -1,3 +1,3 @@
+"""__init__ module for the cribbage package"""
 
-from cribbage.deck import Deck, Hand
-from cribbage.player import Player, Computer
+from cribbage.play import play
